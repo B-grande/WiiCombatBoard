@@ -15,6 +15,25 @@
 #include <arduino_platform.h>
 #include <uni.h>
 
+// adding our drivers for UART
+#include "driver/uart.h"
+#include "driver/gpio.h"
+
+
+
+static void setup_uart(void) {
+    const uart_config_t uart_config = {
+        .baud_rate = 115200,
+        .data_bits = UART_DATA_8_BITS,
+        .parity = UART_PARITY_DISABLE,
+        .stop_bits = UART_STOP_BITS_1,
+        .flow_ctrl = UART_HW_FLOWCTRL_DISABLE,
+    };
+    uart_param_config(UART_NUM_1, &uart_config);
+    uart_set_pin(UART_NUM_1, GPIO_NUM_17, GPIO_NUM_16, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
+    uart_driver_install(UART_NUM_1, 1024, 0, 0, NULL, 0);
+}
+
 //
 // Autostart
 //
@@ -35,16 +54,18 @@ int app_main(void) {
     // Configure BTstack for ESP32 VHCI Controller
     btstack_init();
 
-    // hci_dump_init(hci_dump_embedded_stdout_get_instance());
-
     // Must be called before uni_init()
     uni_platform_set_custom(get_arduino_platform());
 
-    // Init Bluepad32.
+    // Initialize Bluepad32
     uni_init(0 /* argc */, NULL /* argv */);
+
+    // Set up UART to forward data
+    setup_uart();
 
     // Does not return.
     btstack_run_loop_execute();
+
 #if !CONFIG_AUTOSTART_ARDUINO
     return 0;
 #endif  // !CONFIG_AUTOSTART_ARDUINO
