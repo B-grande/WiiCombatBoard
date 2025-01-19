@@ -154,3 +154,20 @@ void uni_balance_board_dump(const uni_balance_board_t* bb) {
 uni_balance_board_threshold_t uni_balance_board_get_threshold(void) {
     return bb_threshold;
 }
+
+//Static variable to store the user's callback
+static balance_board_update_cb_t s_balance_board_update_callback = NULL;
+
+// 2) Registration function that your main app will call
+void uni_balance_board_register_callback(balance_board_update_cb_t cb) {
+    s_balance_board_update_callback = cb;
+}
+
+// 3) Function that calls your callback once new balance board data arrives
+//    (Modify this if you want to do other processing first)
+void uni_balance_board_process_data(const uni_balance_board_t* bb) {
+    // Example: Immediately call the user callback, if set
+    if (s_balance_board_update_callback) {
+        s_balance_board_update_callback(bb);
+    }
+}

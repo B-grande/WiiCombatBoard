@@ -1,3 +1,9 @@
 {
-    "idf.port": "/dev/tty.usbserial-0001"
+    "idf.port": "/dev/tty.usbserial-0001",
+    "files.associations": {
+        "uni_hid_device.h": "c",
+        "uni_controller_type.h": "c",
+        "uni_hid_parser.h": "c",
+        "uni_balance_board.h": "c"
+    }
 }

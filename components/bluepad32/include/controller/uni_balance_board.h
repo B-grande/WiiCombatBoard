@@ -59,6 +59,18 @@ void uni_balance_board_init(void);
 
 uni_balance_board_threshold_t uni_balance_board_get_threshold(void);
 
+// -----------------------------------------------------
+// 1) Add a callback type and a registration function
+// -----------------------------------------------------
+typedef void (*balance_board_update_cb_t)(const uni_balance_board_t* bb);
+void uni_balance_board_register_callback(balance_board_update_cb_t cb);
+
+// -----------------------------------------------------
+// 2) Add a process_data function so the library can
+//    invoke the callback with fresh data
+// -----------------------------------------------------
+void uni_balance_board_process_data(const uni_balance_board_t* bb);
+
 #ifdef __cplusplus
 }
 #endif

@@ -738,12 +738,14 @@ static balance_board_t process_balance_board(uni_hid_device_t* d, const uint8_t*
 // Used for the Wii U Pro Controller and Balance Board
 // Defined here:
 // http://wiibrew.org/wiki/Wiimote#0x34:_Core_Buttons_with_19_Extension_bytes
+#include "controller/uni_balance_board.h"  // So you can call uni_balance_board_process_data()
+
 static void process_drm_kee(uni_hid_device_t* d, const uint8_t* report, uint16_t len) {
     wii_instance_t* ins = get_wii_instance(d);
 
     if (ins->ext_type != WII_EXT_BALANCE_BOARD && ins->ext_type != WII_EXT_U_PRO_CONTROLLER) {
-        loge("Wii: unexpected Wii extension: got %d, want: %d OR %d", ins->ext_type, WII_EXT_U_PRO_CONTROLLER,
-             WII_EXT_BALANCE_BOARD);
+        loge("Wii: unexpected Wii extension: got %d, want: %d OR %d",
+             ins->ext_type, WII_EXT_U_PRO_CONTROLLER, WII_EXT_BALANCE_BOARD);
         return;
     }
 
@@ -753,15 +755,31 @@ static void process_drm_kee(uni_hid_device_t* d, const uint8_t* report, uint16_t
         //
         uni_controller_t* ctl = &d->controller;
         balance_board_t b = process_balance_board(d, &report[3], len - 3);
-        ctl->balance_board.tr = b.tr;
-        ctl->balance_board.br = b.br;
-        ctl->balance_board.tl = b.tl;
-        ctl->balance_board.bl = b.bl;
+
+        // Update the internal controller data (as is done now)
+        ctl->balance_board.tr          = b.tr;
+        ctl->balance_board.br          = b.br;
+        ctl->balance_board.tl          = b.tl;
+        ctl->balance_board.bl          = b.bl;
         ctl->balance_board.temperature = b.temperature;
-        ctl->battery = b.battery;
+        ctl->battery                   = b.battery;
         if (ctl->battery < UNI_CONTROLLER_BATTERY_EMPTY)
             ctl->battery = UNI_CONTROLLER_BATTERY_EMPTY;
         ctl->klass = UNI_CONTROLLER_CLASS_BALANCE_BOARD;
+
+        // --- ADD YOUR CALLBACK CALL HERE ---
+        // Convert the internal "controller" data to the structure your callback expects:
+        uni_balance_board_t user_bb = {
+            .tr          = b.tr,
+            .br          = b.br,
+            .tl          = b.tl,
+            .bl          = b.bl,
+            .temperature = b.temperature,
+        };
+
+        // Now call your function from uni_balance_board.c
+        // which then calls your user callback registered from main.c
+        uni_balance_board_process_data(&user_bb);
 
         return;
     }
